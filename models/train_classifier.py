@@ -82,7 +82,7 @@ def get_metrics(y_test, y_pred, category_names):
     return metrics
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    y_pred = model.predict(X_test)
+    Y_pred = model.predict(X_test)
     get_metrics(Y_test, Y_pred, category_names)
     print(metrics.mean())
     pass

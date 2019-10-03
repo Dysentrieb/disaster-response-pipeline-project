@@ -1,23 +1,93 @@
 import sys
+# import libraries
+from sqlalchemy import create_engine
+import pandas as pd
+import numpy as np
+import time
+
+# Tokenization
+import string
+import nltk
+nltk.download('punkt')
+nltk.download('stopwords')
+from nltk.tokenize import word_tokenize 
+from nltk.corpus import stopwords
+
+# Text processing
+from nltk.stem.wordnet import WordNetLemmatizer
+
+# ML
+from sklearn.pipeline import Pipeline
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.multioutput import MultiOutputClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
+from sklearn.model_selection import GridSearchCV
+
+# Export
+from joblib import dump, load
 
 
 def load_data(database_filepath):
-    pass
+    engine = create_engine('sqlite:///myDisasterResponse.db')
+    df = pd.read_sql_table('DataTable', engine)
+    return df
 
 
 def tokenize(text):
-    pass
+    # Transform to lower case
+    text = text.lower()
+    # Normalize text
+    table = str.maketrans({key: None for key in string.punctuation})
+    text_1 = text.translate(table) 
+    # Tokenize text
+    word_tokens = word_tokenize(text_1) 
+    filtered_sentence = [w for w in word_tokens if w not in stopwords.words("english")]  
+    return filtered_sentence
 
 
 def build_model():
-    pass
+    pipeline = Pipeline([('vect', CountVectorizer(tokenizer=tokenize)),
+             ('tfidf', TfidfTransformer()),
+             ('moc', MultiOutputClassifier(RandomForestClassifier()))])   
+    return pipeline
 
+def get_metrics(y_test, y_pred):
+    # Get Scores
+    f1_list = []
+    precision_list = []
+    recall_list = []
+    #target_names = y.columns
+
+    y_test =  np.array(y_test)
+    y_pred =  np.array(y_pred)
+    for n in range(y_test.shape[1]):    
+        report = classification_report(y_test[:, n], y_pred[:, n], output_dict=True)
+        f1_list.append(report['weighted avg']['f1-score'])
+        precision_list.append(report['weighted avg']['precision'])
+        recall_list.append(report['weighted avg']['recall'])
+    
+    # Merge lists into Dataframe
+    metrics = pd.DataFrame(
+        {'Category': y.columns,
+         'Precision': precision_list,
+         'Recall': recall_list,
+         'F1-Score': f1_list
+        })
+    
+    return metrics
 
 def evaluate_model(model, X_test, Y_test, category_names):
+    y_pred = model.predict(X_test)
+    get_metrics(y_test, y_pred)
+    print(metrics.mean())
     pass
 
 
 def save_model(model, model_filepath):
+    # Save the model to a pkl file
+    dump(model, filepath) 
     pass
 
 

@@ -83,14 +83,14 @@ def get_metrics(y_test, y_pred, category_names):
 
 def evaluate_model(model, X_test, Y_test, category_names):
     Y_pred = model.predict(X_test)
-    get_metrics(Y_test, Y_pred, category_names)
+    metrics = get_metrics(Y_test, Y_pred, category_names)
     print(metrics.mean())
     pass
 
 
 def save_model(model, model_filepath):
     # Save the model to a pkl file
-    dump(model, filepath) 
+    dump(model, model_filepath) 
     pass
 
 

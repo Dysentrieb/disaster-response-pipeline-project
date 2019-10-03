@@ -30,9 +30,12 @@ from joblib import dump, load
 
 
 def load_data(database_filepath):
-    engine = create_engine('sqlite:///myDisasterResponse.db')
+    engine = create_engine('sqlite:///' + database_filepath)
     df = pd.read_sql_table('DataTable', engine)
-    return df
+    X = df['message']
+    y = df.drop(['id', 'genre', 'message', 'original'], axis=1)
+    category_names = y.columns
+    return X, y, category_names
 
 
 def tokenize(text):
@@ -53,7 +56,7 @@ def build_model():
              ('moc', MultiOutputClassifier(RandomForestClassifier()))])   
     return pipeline
 
-def get_metrics(y_test, y_pred):
+def get_metrics(y_test, y_pred, category_names):
     # Get Scores
     f1_list = []
     precision_list = []
@@ -70,7 +73,7 @@ def get_metrics(y_test, y_pred):
     
     # Merge lists into Dataframe
     metrics = pd.DataFrame(
-        {'Category': y.columns,
+        {'Category': category_names,
          'Precision': precision_list,
          'Recall': recall_list,
          'F1-Score': f1_list
@@ -80,7 +83,7 @@ def get_metrics(y_test, y_pred):
 
 def evaluate_model(model, X_test, Y_test, category_names):
     y_pred = model.predict(X_test)
-    get_metrics(y_test, y_pred)
+    get_metrics(y_test, y_pred, category_names)
     print(metrics.mean())
     pass
 

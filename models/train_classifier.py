@@ -66,10 +66,16 @@ def get_metrics(y_test, y_pred, category_names):
     y_test =  np.array(y_test)
     y_pred =  np.array(y_pred)
     for n in range(y_test.shape[1]):    
-        report = classification_report(y_test[:, n], y_pred[:, n], output_dict=True)
-        f1_list.append(report['weighted avg']['f1-score'])
-        precision_list.append(report['weighted avg']['precision'])
-        recall_list.append(report['weighted avg']['recall'])
+        report = classification_report(y_test[:, n], y_pred[:, n])
+        #print(report)
+        report_split = report.split()
+        # report = classification_report(y_test[:, n], y_pred[:, n], output_dict=True)
+        #f1_list.append(report['weighted avg']['f1-score'])
+        #precision_list.append(report['weighted avg']['precision'])
+        #recall_list.append(report['weighted avg']['recall'])
+        f1_list.append(float(report_split[-2]))
+        precision_list.append(float(report_split[-4]))
+        recall_list.append(float(report_split[-3]))
     
     # Merge lists into Dataframe
     metrics = pd.DataFrame(

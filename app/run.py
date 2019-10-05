@@ -30,7 +30,7 @@ def tokenize(text):
 engine = create_engine('sqlite:///data/DisasterResponse.db')
 df = pd.read_sql_table('DataTable', engine)
 
-# load model
+# load 
 model = load("models/classifier.pkl")
 
 
@@ -44,28 +44,65 @@ def index():
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
     
+    #category_counts = df.groupby('category').count()['message']
+    category_names = list(genre_counts.index)
+    
+    y = df.drop(['id', 'genre', 'message', 'original'], axis=1)
+    #y_sum = pd.DataFrame(y.sum(), columns = ['count'])
+    y_sum = y.sum()
+    y_cols = y.columns
+    y_cols_no_related = y.drop(['related'], axis=1).columns
+    
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
-    graphs = [
-        {
-            'data': [
-                Bar(
-                    x=genre_names,
-                    y=genre_counts
-                )
-            ],
+ 
+    
+    graph_one= []
 
-            'layout': {
-                'title': 'Distribution of Message Genres',
-                'yaxis': {
-                    'title': "Count"
-                },
-                'xaxis': {
-                    'title': "Genre"
-                }
-            }
-        }
-    ]
+    graph_one.append(
+      Bar(
+      x = genre_names,
+      y = genre_counts,
+      )
+    )
+
+    layout_one = dict(title = 'Distribution of Message Genres',
+                xaxis = dict(title = 'Genre',),
+                yaxis = dict(title = 'Count'),
+                )
+    
+    graph_two= []
+
+    graph_two.append(
+      Bar(
+      x = list(y_cols),
+      y = list(y_sum),
+      )
+    )
+
+    layout_two = dict(title = 'Distribution of Message Categories',
+                xaxis = dict(title = 'Category',),
+                yaxis = dict(title = 'Count'),
+                )
+    
+    graph_three= []
+
+    graph_three.append(
+      Bar(
+      x = list(y_cols_no_related),
+      y = list(y_sum.drop('related')),
+      )
+    )
+
+    layout_three = dict(title = 'Distribution of Message Categories except "related"',
+                xaxis = dict(title = 'Category',),
+                yaxis = dict(title = 'Count'),
+                )
+    
+    graphs = []
+    graphs.append(dict(data=graph_one, layout=layout_one))
+    graphs.append(dict(data=graph_two, layout=layout_two))
+    graphs.append(dict(data=graph_three, layout=layout_three))
     
     # encode plotly graphs in JSON
     ids = ["graph-{}".format(i) for i, _ in enumerate(graphs)]

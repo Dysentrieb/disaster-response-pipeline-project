@@ -56,18 +56,31 @@ def build_model():
              ('moc', MultiOutputClassifier(RandomForestClassifier()))])   
     return pipeline
 
+def train_model(model, X, y):
+    # Set Parameters for GridSearch
+    parameters = {
+    'moc__estimator__min_samples_split': [2, 4]
+    }
+    # Apply GridSearch
+    modelCV = GridSearchCV(model, param_grid=parameters)
+    modelCV.fit(X, y)
+    # Print meesage and best Parameters
+    print('Best Parameters found with GridSearchCV:')
+    print(modelCV.best_params_)
+    return modelCV
+
 def get_metrics(y_test, y_pred, category_names):
     # Get Scores
     f1_list = []
     precision_list = []
     recall_list = []
     #target_names = y.columns
-
     y_test =  np.array(y_test)
     y_pred =  np.array(y_pred)
     for n in range(y_test.shape[1]):    
         report = classification_report(y_test[:, n], y_pred[:, n])
-        #print(report)
+        print(category_names[n] + ':')
+        print(report)
         report_split = report.split()
         # report = classification_report(y_test[:, n], y_pred[:, n], output_dict=True)
         #f1_list.append(report['weighted avg']['f1-score'])
@@ -111,7 +124,7 @@ def main():
         model = build_model()
         
         print('Training model...')
-        model.fit(X_train, Y_train)
+        model = train_model(model, X_train, Y_train)
         
         print('Evaluating model...')
         evaluate_model(model, X_test, Y_test, category_names)
